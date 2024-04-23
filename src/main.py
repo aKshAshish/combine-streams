@@ -43,28 +43,42 @@ def getDimension(frames: list[cv2.typing.MatLike]):
 # Sanitizes frames if a frame is not present return a black image for the same
 def getSanitizedFrames(frames: list[cv2.typing.MatLike]):
     dims = getDimension(frames)
-    return [np.zeros(dims) if frame is None else frame for frame in frames]    
+    return [np.zeros(dims, dtype=np.uint8) if frame is None else frame for frame in frames]    
 
 
 # Tries to get the stream
 def getStream(url: str):
     print(f'[Info] -- Getting stream: {url}')
     try:
-        stream = cv2.VideoCapture(url)
+        stream = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
+        totalChannels = int(stream.get(cv2.CAP_PROP_AUDIO_TOTAL_CHANNELS))
+        baseIndex = int(stream.get(cv2.CAP_PROP_AUDIO_BASE_INDEX))
+        totalStreams = int(stream.get(cv2.CAP_PROP_AUDIO_TOTAL_STREAMS))
+        print(f'[INFO] -- Audio Streams -> {totalStreams} Audio Channels -> {totalChannels}, Base Index -> {baseIndex}')
         return stream if stream.isOpened() else None
     except:
         return None
 
+def getAudioChannels(stream: cv2.VideoCapture):
+    totalChannels = int(stream.get(cv2.CAP_PROP_AUDIO_TOTAL_CHANNELS))
+    baseIndex = int(stream.get(cv2.CAP_PROP_AUDIO_BASE_INDEX))
+    audioData: list[cv2.typing.MatLike] = []
+    for i in range(0, totalChannels):
+        audionChannel: cv2.typing.MatLike = []
+        stream.retrieve(audionChannel, baseIndex + i)
+        print(audionChannel)
+        audioData.append(audionChannel)
 
 # Captures frame from a stream if stream is not present returns None
 def getFrameFromStream(stream: cv2.VideoCapture):
-    if stream is None:
+    if stream is None :
         return None
-    else:
+    elif stream.isOpened():
         ret, frame = stream.read()
         if not ret:
             return None
         return frame
+    return None
 
 def stackVertically(frameA: cv2.typing.MatLike, frameB=None):
     if frameB is None:
@@ -100,6 +114,7 @@ def main():
                 stream = getStream(url)
                 streamMap[url] = stream
 
+        # [getAudioChannels(stream) for stream in streamMap.values()]
         frames = [getFrameFromStream(stream) for stream in streamMap.values()]
         scaledFrames = scaleFrames(frames)
         sanitizedFrames = getSanitizedFrames(scaledFrames)
