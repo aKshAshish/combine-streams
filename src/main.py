@@ -9,7 +9,7 @@ import numpy as np
 def getStreamUrls():
     urls = os.environ.get('STREAM_URLS')
     if urls is None:
-        return ['rtp://127.0.0.1:6000', 'rtp://127.0.0.1:6002', 'rtp://127.0.0.1:6004']
+        return ['rtp://127.0.0.1:6000']#, 'rtp://127.0.0.1:6002', 'rtp://127.0.0.1:6004']
     urls = ast.literal_eval(urls)
     return [url.strip() for url in urls]
 
@@ -50,7 +50,7 @@ def getSanitizedFrames(frames: list[cv2.typing.MatLike]):
 def getStream(url: str):
     print(f'[Info] -- Getting stream: {url}')
     try:
-        stream = cv2.VideoCapture(url, cv2.CAP_FFMPEG)
+        stream = cv2.VideoCapture(url)
         totalChannels = int(stream.get(cv2.CAP_PROP_AUDIO_TOTAL_CHANNELS))
         baseIndex = int(stream.get(cv2.CAP_PROP_AUDIO_BASE_INDEX))
         totalStreams = int(stream.get(cv2.CAP_PROP_AUDIO_TOTAL_STREAMS))
