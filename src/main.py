@@ -9,7 +9,7 @@ import numpy as np
 def getStreamUrls():
     urls = os.environ.get('STREAM_URLS')
     if urls is None:
-        return ['rtp://127.0.0.1:6000']#, 'rtp://127.0.0.1:6002', 'rtp://127.0.0.1:6004']
+        return ['rtp://127.0.0.1:6000', 'rtp://127.0.0.1:6001']#, 'rtp://127.0.0.1:6002', 'rtp://127.0.0.1:6004']
     urls = ast.literal_eval(urls)
     return [url.strip() for url in urls]
 

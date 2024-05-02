@@ -1,5 +1,6 @@
 import socket
 from threading import Thread
+from multiprocessing import Queue
 
 class RTPStream :
     def __init__(self, addr: str, port: int) -> None:
@@ -8,7 +9,7 @@ class RTPStream :
         print(f'{addr}:{port}')
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.socket.bind((self.addr, self.port))
-        self.data: bytes = None
+        self.data = Queue()
         self.stopped = True
         self.t = Thread(target=self.getData, args=(), daemon=True)
 
@@ -23,9 +24,10 @@ class RTPStream :
         self.stopped = True
         self.t.join()
 
-    def getData(self) -> bytes:
+    def getData(self):
         print(f'[INFO] -- Starting to read data from {self.addr}:{self.port}')
         while True:
             if self.stopped:
                 break
-            self.data, addr = self.socket.recvfrom(1024 * 256)
+            data, addr = self.socket.recvfrom(2048)
+            self.data.put(data)
